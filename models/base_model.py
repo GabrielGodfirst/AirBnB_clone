@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 Module: base_model.py
 
 Defines the BaseModel class, which provides common attributes
 and methods for other classes in the AirBnB application.
 """
-
 import uuid
 from datetime import datetime
+import models
 
 
 class BaseModel:
@@ -31,6 +31,7 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
+            models. storage.new(self)
 
     def __str__(self):
         """Return string representation of the instance"""
@@ -41,6 +42,7 @@ class BaseModel:
     def save(self):
         """Update updated_at attribute with current datetime"""
         self.updated_at = datetime.now()
+        models.storage.save()
 
     def to_dict(self):
         """Return dictionary representation of the instance"""
