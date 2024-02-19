@@ -1,0 +1,15 @@
+header {
+    height: 70px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 100px; /* adjust width as per your logo */
+    height: 100%; /* aligns vertically */
+    background-image: url("../images/hbnb-logo.png"); /* adjust the path */
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-left: 20px;
+}

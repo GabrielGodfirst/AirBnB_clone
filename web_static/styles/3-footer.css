@@ -1,0 +1,22 @@
+footer {
+    height: 60px;
+    background-color: white;
+    text-align: center;
+}
+
+.footer-content {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+footer {
+    height: 60px;
+    background-color: white;
+    text-align: center;
+}
+
+.footer-content {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
