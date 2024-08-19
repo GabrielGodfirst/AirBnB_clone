@@ -11,11 +11,23 @@ class BaseModel:
     """A base class for all models, containing common attributes and methods.
     """
 
-    def __init__(self):
-        """Initializes a new instance of BaseModel."""
-        self.id = str(uuid.uuid4())
-        self.created_at = datetime.now()
-        self.updated_at = datetime.now()
+    def __init__(self, *args, **kwargs):
+        """Initializes a new instance of BaseModel.
+        Args:
+        *args: Not used,
+        **Kwargs: A dictionary of attri utes to set the instance with
+
+        """
+        if kwargs:
+            for key, value in kwargs.items():
+                if key == 'created_at' or key == 'updated_at':
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                if key != '__class__':
+                    setattr(self, key, value)
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
 
     def __str__(self):
         """Returns a string representation of the instance."""
