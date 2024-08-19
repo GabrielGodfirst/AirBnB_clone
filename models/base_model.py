@@ -5,6 +5,7 @@ BaseModel class that defines all common attributes/methods for other classes.
 
 import uuid
 from datetime import datetime
+#from models import storage
 
 
 class BaseModel:
@@ -13,10 +14,10 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs):
         """Initializes a new instance of BaseModel.
-        Args:
-        *args: Not used,
-        **Kwargs: A dictionary of attri utes to set the instance with
 
+        Args:
+            *args: Not used.
+            **kwargs: A dictionary of attributes to set the instance with.
         """
         if kwargs:
             for key, value in kwargs.items():
@@ -28,6 +29,8 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
+            from models import storage
+            storage.new(self)
 
     def __str__(self):
         """Returns a string representation of the instance."""
@@ -36,6 +39,8 @@ class BaseModel:
     def save(self):
         """Updates the `updated_at` attribute with the current datetime."""
         self.updated_at = datetime.now()
+        from models import storage
+        storage.save()
 
     def to_dict(self):
         """Returns a dictionary representation of the instance."""
