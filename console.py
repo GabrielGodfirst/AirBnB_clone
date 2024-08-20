@@ -31,6 +31,23 @@ class HBNBCommand(cmd.Cmd):
             "Review": Review
             }
 
+    def default(self, line):
+        """Handle <class name>.all() command."""
+        args = line.split(".")
+        if len(args) == 2 and args[1] == "all()":
+            class_name = args[0]
+            if class_name in self.classes:
+                all_objects = storage.all()
+                class_objects = [
+                        str(obj) for key, obj in all_objects.items()
+                        if key.startswith(f"{class_name}.")
+                ]
+                print(class_objects)
+            else:
+                print("** class doesn't exist **")
+        else:
+            print(f"** unknown syntax: {line}")
+
     def do_create(self, arg):
         """
         Creates a new instance of a class and saves it to JSON file.
