@@ -6,6 +6,7 @@ This module contains the entry point for the command interpreter.
 import cmd
 from models.base_model import BaseModel
 from models import storage
+from models.user import User
 
 # classes = {"BaseModel": BaseModel}
 
@@ -118,7 +119,7 @@ class HBNBCommand(cmd.Cmd):
             except valueError:
                 pass
 
-        setattr(instance, attr: _name, attr_value)
+        setattr(instance, attr_name, attr_value)
         instance.save()
 
     def do_quit(self, arg):
