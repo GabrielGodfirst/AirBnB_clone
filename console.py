@@ -34,33 +34,53 @@ class HBNBCommand(cmd.Cmd):
     def default(self, line):
         """Handle <class name>.all() command."""
         args = line.split(".")
-        if len(args) == 2 and args[1] == "all()":
+        if len(args) == 2:
             class_name = args[0]
-            if class_name in self.classes:
-                all_objects = storage.all()
-                class_objects = [
-                        str(obj) for key, obj in all_objects.items()
-                        if key.startswith(f"{class_name}.")
-                ]
-                print(class_objects)
-            else:
-                print("** class doesn't exist **")
-        else:
-            print(f"** unknown syntax: {line}")
+            command = args[1].strip("()")
 
-    def do_create(self, arg):
+            if class_name in self.classes:
+                if command == "all":
+                    self.do_all(class_name)
+                elif command == "count":
+                    self.do_count(class_name)
+                else:
+                    print(f"*** Unknown syntax: {line}")
+            else:
+                print(f"** class doesn't exist **")
+        else:
+            print(f"*** Unknown syntax: {line}")
+
+    def do_all(self, class_name):
+        """Retrieve all instances of a class."""
+        all_objects = storsge.all()
+        class_objects = [
+                str(obj) for key, obj in all_objects.items()
+                if key.startswith(f"{clss_name}.")
+        ]
+        print(class_objects)
+
+    def do_count(self, class_name):
+        """Retrieve the number of instances of a class."""
+        if class_name not in self.classes:
+            print("** class doesn't exist **")
+            return
+        count = sum(1 for key in storage.all() if key.startswith(
+            f"{class_name}."))
+        print(count)
+
+    def do_create(self, class_name):
         """
         Creates a new instance of a class and saves it to JSON file.
         """
-        args = arg.split()
-        if len(args) == 0:
+        if not class_name:
             print("** class name missing **")
-        elif args[0] not in self.classes:
+            return
+        if class_name not in self.classes:
             print("** class doesn't exist **")
-        else:
-            obj = self.classes[args[0]]()
-            obj.save()
-            print(obj.id)
+            return
+        new_instance = self.classes[class_name]()
+        new_instance.save()
+        print(new_instance.id)
 
     def do_show(self, arg):
         """
@@ -99,17 +119,19 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print("** no instance found **")
 
-    def do_all(self, arg):
+    def do_all(self, class_name):
         """Prints all string representation of all instances based
         or not on the class name.
         """
-        args = arg.split()
-        if len(args) > 0 and args[0] not in self.classes:
+        if class_name not in self.classes:
             print("** class doesn't exist **")
-        else:
-            objs = [str(obj) for key, obj in storage.all().items()
-                    if len(args) == 0 or key.startswith(f"{args[0]}.")]
-            print(objs)
+            return
+        all_objects = storage.all()
+        class_objects = [
+                str(obj) for key, obj in all_objects.items()
+                if key.startswith(f"{class_name}.")
+        ]
+        print(class_objects)
 
     def do_update(self, arg):
         """Updates an instance based on the class name and id by adding or
