@@ -36,13 +36,18 @@ class HBNBCommand(cmd.Cmd):
         args = line.split(".")
         if len(args) == 2:
             class_name = args[0]
-            command = args[1].strip("()")
+            method_call = args[1].strip("()").split("(")
+            command = method_call[0]
+            id_param = method_call[1].strip("\"'") if len(
+                    method_call) > 1 else None
 
             if class_name in self.classes:
                 if command == "all":
                     self.do_all(class_name)
                 elif command == "count":
                     self.do_count(class_name)
+                elif command == "show" and id_param:
+                    self.do_show(f"{class_name} {id_param}")
                 else:
                     print(f"*** Unknown syntax: {line}")
             else:
@@ -67,6 +72,23 @@ class HBNBCommand(cmd.Cmd):
         count = sum(1 for key in storage.all() if key.startswith(
             f"{class_name}."))
         print(count)
+
+    def do_show(self, arg):
+        """show an instane based on its class name and id."""
+        args = arg.split()
+        if len(args) == 0:
+            print("** class name missing **")
+        elif args[0] not in self.classes:
+            print("** class doesn't exist **")
+        elif len(args) == 1:
+            print("** instance id missing **")
+        else:
+            key = f"{args[0]}.{args[1]}"
+            obj = storage.all().get(key)
+            if obj:
+                print(obj)
+            else:
+                print("** no instance found **")
 
     def do_create(self, class_name):
         """
