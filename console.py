@@ -7,6 +7,11 @@ import cmd
 from models.base_model import BaseModel
 from models import storage
 from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 
 # classes = {"BaseModel": BaseModel}
 
@@ -18,7 +23,12 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
     classes = {
             "BaseModel": BaseModel,
-            "User": User
+            "User": User,
+            "State": State,
+            "City": City,
+            "Amenity": Amenity,
+            "Place": Place,
+            "Review": Review
             }
 
     def do_create(self, arg):
@@ -31,9 +41,9 @@ class HBNBCommand(cmd.Cmd):
         elif args[0] not in self.classes:
             print("** class doesn't exist **")
         else:
-            instance = self.classes[args[0]]()
-            instance.save()
-            print(instance.id)
+            obj = self.classes[args[0]]()
+            obj.save()
+            print(obj.id)
 
     def do_show(self, arg):
         """
@@ -49,8 +59,9 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
         else:
             key = f"{args[0]}.{args[1]}"
-            if key in storage.all():
-                print(storage.all()[key])
+            obj = storage.all().get(key)
+            if obj:
+                print(obj)
             else:
                 print("** no instance found **")
 
@@ -75,52 +86,46 @@ class HBNBCommand(cmd.Cmd):
         """Prints all string representation of all instances based
         or not on the class name.
         """
-        if arg and arg not in self.classes:
+        args = arg.split()
+        if len(args) > 0 and args[0] not in self.classes:
             print("** class doesn't exist **")
         else:
-            objects = storage.all()
-            result = ([str(obj) for key, obj in objects.items()
-                      if not arg or key.startswith(arg)])
-            print(result)
+            objs = [str(obj) for key, obj in storage.all().items()
+                    if len(args) == 0 or key.startswith(f"{args[0]}.")]
+            print(objs)
 
     def do_update(self, arg):
         """Updates an instance based on the class name and id by adding or
         updating attribute.
         """
         args = arg.split()
-        if len(args) < 1:
+        if len(args) == 0:
             print("** class name missing **")
-            return
-        if args[0] not in self.classes:
+        elif args[0] not in self.classes:
             print("** class doesn't exist **")
-            return
-        if len(args) < 2:
+        elif len(args) == 1:
             print("** instance id missing **")
-            return
-        key = args[0] + '.' + args[1]
-        if key not in storage.all():
-            print("** no instance found **")
-            return
-        if len(args) < 3:
+        elif len(args) == 2:
             print("** attribute name missing **")
-            return
-        if len(args) < 4:
+        elif len(args) == 3:
             print("** value missing **")
-            return
-
-        instance = storage.all()[key]
-        attr_name = args[2]
-        attr_value = args[3].strip('"')
-
-        if hasattr(instance, attr_name):
-            attr_type = type(getattr(instance, attr_name))
-            try:
-                attr_value = attr_type(attr_value)
-            except valueError:
-                pass
-
-        setattr(instance, attr_name, attr_value)
-        instance.save()
+        else:
+            key = f"{args[0]}.{args[1]}"
+            obj = storage.all().get(key)
+            if obj:
+                attr_name = args[2]
+                attr_value = args[3].strip('"')
+                if hasattr(obj, attr_name):
+                    attr_type = type(getattr(obj, attr_name))
+                    try:
+                        setattr(obj, attr_name, attr_type(attr_value))
+                    except valueError:
+                        print("** invalid attribute value **")
+                        obj.save()
+                else:
+                    print("** attribute name doesn't exist **")
+            else:
+                print("** no instance found **")
 
     def do_quit(self, arg):
         """Quit command to exit the program"""

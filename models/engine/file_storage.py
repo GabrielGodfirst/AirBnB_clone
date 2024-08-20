@@ -7,6 +7,11 @@ and deserializes JSON file to instances.
 import json
 from models.base_model import BaseModel
 from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 
 
 class FileStorage:
@@ -43,6 +48,16 @@ class FileStorage:
                         obj = BaseModel(**obj_dict)
                     elif cls_name == "User":
                         obj = User(**obj_dict)
+                    elif cls_name == "State":
+                        obj = State(**obj_dict)
+                    elif cls_name == "City":
+                        obj = City(**obj_dict)
+                    elif cls_name == "Amenity":
+                        obj = Amenity(**obj_dict)
+                    elif cls_name == "Place":
+                        obj = Place(**obj_dict)
+                    elif cls_name == "Review":
+                        obj = Review(**obj_dict)
                     else:
                         continue
                     self.new(obj)
