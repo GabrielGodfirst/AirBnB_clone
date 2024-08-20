@@ -15,18 +15,22 @@ class HBNBCommand(cmd.Cmd):
     Command interpreter class for AirBnB clone.
     """
     prompt = "(hbnb) "
-    classes = {"BaseModel": BaseModel}
+    classes = {
+            "BaseModel": BaseModel,
+            "User": User
+            }
 
     def do_create(self, arg):
         """
-        Creates a new instance of BaseModel, saves it, and prints the id.
+        Creates a new instance of a class and saves it to JSON file.
         """
-        if not arg:
+        args = arg.split()
+        if len(args) == 0:
             print("** class name missing **")
-        elif arg not in self.classes:
+        elif args[0] not in self.classes:
             print("** class doesn't exist **")
         else:
-            instance = self.classes[arg]()
+            instance = self.classes[args[0]]()
             instance.save()
             print(instance.id)
 
@@ -114,7 +118,7 @@ class HBNBCommand(cmd.Cmd):
             except valueError:
                 pass
 
-        setattr(instance, attr_name, attr_value)
+        setattr(instance, attr: _name, attr_value)
         instance.save()
 
     def do_quit(self, arg):
