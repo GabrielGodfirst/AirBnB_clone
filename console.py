@@ -48,12 +48,31 @@ class HBNBCommand(cmd.Cmd):
                     self.do_count(class_name)
                 elif command == "show" and id_param:
                     self.do_show(f"{class_name} {id_param}")
+                elif command == "destroy" and id_param:
+                    self.do_destroy(f"{class_name} {id_param}")
                 else:
                     print(f"*** Unknown syntax: {line}")
             else:
                 print(f"** class doesn't exist **")
         else:
             print(f"*** Unknown syntax: {line}")
+
+    def do_destroy(self, arg):
+        """Deletes an instance based on the class name and id."""
+        args = arg.split()
+        if len(args) == 0:
+            print("** class name missing **")
+        elif args[0] not in self.classes:
+            print("** class doesn't exist **")
+        elif len(args) == 1:
+            print("** instance id missing **")
+        else:
+            key = f"{args[0]}.{args[1]}"
+            if key in storage.all():
+                del storage.all()[key]
+                storage.save()
+            else:
+                print("** no instance found **")
 
     def do_all(self, class_name):
         """Retrieve all instances of a class."""
