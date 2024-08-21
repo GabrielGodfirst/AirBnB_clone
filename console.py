@@ -38,24 +38,64 @@ class HBNBCommand(cmd.Cmd):
             class_name = args[0]
             method_call = args[1].strip("()").split("(")
             command = method_call[0]
-            id_param = method_call[1].strip("\"'") if len(
-                    method_call) > 1 else None
+            method_args = method_call[1].split(",") if len(
+                    method_call) > 1 else []
 
             if class_name in self.classes:
                 if command == "all":
                     self.do_all(class_name)
                 elif command == "count":
                     self.do_count(class_name)
-                elif command == "show" and id_param:
-                    self.do_show(f"{class_name} {id_param}")
-                elif command == "destroy" and id_param:
-                    self.do_destroy(f"{class_name} {id_param}")
+                elif command == "show" and method_args:
+                    obj_id = method_args[0].strip('\"\'')
+                    self.do_show(f"{class_name} {obj_id}")
+                elif command == "destroy" and method_args:
+                    obj_id = method_args[0].strip('\"\'')
+                    self.do_destroy(f"{class_name} {obj_id}")
+                elif command == "update" and len(method_args) == 3:
+                    obj_id = method_args[0].strip('\"\'')
+                    attr_name = method_args[1].strip('\"\'')
+                    attr_value = method_args[2].strip('\"\'')
+                    self.do_update(
+                            f"{class_name} {obj_id} {attr_name} {attr_value}")
                 else:
                     print(f"*** Unknown syntax: {line}")
             else:
                 print(f"** class doesn't exist **")
         else:
             print(f"*** Unknown syntax: {line}")
+
+    def do_update(self, arg):
+        """udate an instance based on th class name id."""
+        args = arg.split()
+        if len(args) < 4:
+            if len(args) == 0:
+                print("** class name missing **")
+            elif len(args) == 1:
+                print("** instance id missing **")
+            elif len(args) == 2:
+                print("** attribute name missing **")
+            elif len(args) == 3:
+                print("** value missing **")
+        elif args[0] not in self.classes:
+            print("** class doesn't exist **")
+        else:
+            key = f"{args[0]}.{args[1]}"
+            obj_dict = storage.all()
+            if key in obj_dict:
+                obj = obj_dict[key]
+                attr_name = args[2]
+                attr_value = args[3].strip('\"\'')
+                if hasattr(obj, attr_name):
+                    attr_type = type(getattr(obj, attr_name))
+                    try:
+                        attr_value = attr_type(attr_value)
+                    except valueError:
+                        pass
+                setattr(obj, attr_name, attr_value)
+                obj.save()
+            else:
+                print("** no instance found **")
 
     def do_destroy(self, arg):
         """Deletes an instance based on the class name and id."""
@@ -173,39 +213,6 @@ class HBNBCommand(cmd.Cmd):
                 if key.startswith(f"{class_name}.")
         ]
         print(class_objects)
-
-    def do_update(self, arg):
-        """Updates an instance based on the class name and id by adding or
-        updating attribute.
-        """
-        args = arg.split()
-        if len(args) == 0:
-            print("** class name missing **")
-        elif args[0] not in self.classes:
-            print("** class doesn't exist **")
-        elif len(args) == 1:
-            print("** instance id missing **")
-        elif len(args) == 2:
-            print("** attribute name missing **")
-        elif len(args) == 3:
-            print("** value missing **")
-        else:
-            key = f"{args[0]}.{args[1]}"
-            obj = storage.all().get(key)
-            if obj:
-                attr_name = args[2]
-                attr_value = args[3].strip('"')
-                if hasattr(obj, attr_name):
-                    attr_type = type(getattr(obj, attr_name))
-                    try:
-                        setattr(obj, attr_name, attr_type(attr_value))
-                    except valueError:
-                        print("** invalid attribute value **")
-                        obj.save()
-                else:
-                    print("** attribute name doesn't exist **")
-            else:
-                print("** no instance found **")
 
     def do_quit(self, arg):
         """Quit command to exit the program"""
