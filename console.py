@@ -52,12 +52,27 @@ class HBNBCommand(cmd.Cmd):
                 elif command == "destroy" and method_args:
                     obj_id = method_args[0].strip('\"\'')
                     self.do_destroy(f"{class_name} {obj_id}")
-                elif command == "update" and len(method_args) == 3:
-                    obj_id = method_args[0].strip('\"\'')
-                    attr_name = method_args[1].strip('\"\'')
-                    attr_value = method_args[2].strip('\"\'')
-                    self.do_update(
-                            f"{class_name} {obj_id} {attr_name} {attr_value}")
+                elif command == "update":
+                    if (method_args and "{" in method_args
+                            and "}" in method_args):
+                        obj_id, dict_str = method_args.split(",", 1)
+                        dict_str = dict_str.strip()
+                        if dict_str.stsrtswith("{") and dict_str.endswith("}"):
+                            dict_str = dict_str.split(",")
+                            attributes = {}
+                            for pair in attr_pairs:
+                                key, value = pair.split(":", 1)
+                                attributes[key.strip().strip(
+                                    "\"'")] = value.strip().strip("\"'")
+                            self.do_update_with_dict(
+                                    f"{class_name} {obj_id} {attributes}")
+                        else:
+                            print(f"** unkknown syntax: {line}")
+                    else:
+                        if method_args:
+                            self.do_update(f"{class_name} {method_args}")
+                        else:
+                            print(f"*** unknown syntax: {line}")
                 else:
                     print(f"*** Unknown syntax: {line}")
             else:
@@ -81,21 +96,38 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
         else:
             key = f"{args[0]}.{args[1]}"
-            obj_dict = storage.all()
-            if key in obj_dict:
-                obj = obj_dict[key]
-                attr_name = args[2]
-                attr_value = args[3].strip('\"\'')
-                if hasattr(obj, attr_name):
-                    attr_type = type(getattr(obj, attr_name))
-                    try:
-                        attr_value = attr_type(attr_value)
-                    except valueError:
-                        pass
-                setattr(obj, attr_name, attr_value)
+            if key in storage.all():
+                obj = storage.all()[key]
+                setattr(obj, args[2], args[3])
                 obj.save()
+
+    def do_update_with_dict(self, arg):
+        """Update an instance based on the class name and id
+        with a dictionary.
+        """
+        args = arg.split(maxsplit=2)
+        if len(args) < 2:
+            if len(args) == 0:
+                print("** class name missing **")
+            elif len(args) == 1:
+                print("** instance id missing **")
             else:
-                print("** no instance found **")
+                print("** dictionary missing **")
+        elif args[0] not in self.classes:
+            print("** class doesn't exist **")
+        else:
+            key = f"{args[0]}.{args[1]}"
+            if key in storage.all():
+                obj = storage.all()[key]
+                attributes = eval(args[2])
+                if not isinstance(attributes, dict):
+                    print("** invalid dictionary format **")
+                    return
+                for attr_name, attr_value in attributes.items():
+                    setattr(obj, attr_name, attr_value)
+                    obj.save()
+                else:
+                    print("** no instance found **")
 
     def do_destroy(self, arg):
         """Deletes an instance based on the class name and id."""
