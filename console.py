@@ -52,31 +52,30 @@ class HBNBCommand(cmd.Cmd):
                 elif command == "destroy" and method_args:
                     obj_id = method_args[0].strip('\"\'')
                     self.do_destroy(f"{class_name} {obj_id}")
-                elif command == "update":
-                    if (method_args and "{" in method_args
-                            and "}" in method_args):
-                        obj_id, dict_str = method_args.split(",", 1)
-                        dict_str = dict_str.strip()
-                        if dict_str.stsrtswith("{") and dict_str.endswith("}"):
-                            dict_str = dict_str.split(",")
-                            attributes = {}
-                            for pair in attr_pairs:
-                                key, value = pair.split(":", 1)
-                                attributes[key.strip().strip(
-                                    "\"'")] = value.strip().strip("\"'")
-                            self.do_update_with_dict(
-                                    f"{class_name} {obj_id} {attributes}")
+                elif command == "update" and method_args:
+                    obj_id = method_args[0].strip('\"\'')
+                    if len(method_args) == 2:
+                        dict_str = method_args[1].strip()
+                        if dict_str.startswith("{") and dict_str.endswith("}"):
+                            attributes = eval(dict_str)
+                            if isinstance(attributes, dict):
+                                self.do_update_with_dict(
+                                        f"{class_name} {obj_id} {attributes}")
+                            else:
+                                print(f"** invalid dictionary format **")
                         else:
-                            print(f"** unkknown syntax: {line}")
+                            print(f"** unknown syntax: {line}")
+                    elif len(method_args) == 3:
+                        attr_name = method_args[1].strip('\"\'')
+                        attr_value = method_args[2].strip('\"\'')
+                        self.do_update(
+                            f"{class_name} {obj_id} {attr_name} {attr_value}")
                     else:
-                        if method_args:
-                            self.do_update(f"{class_name} {method_args}")
-                        else:
-                            print(f"*** unknown syntax: {line}")
+                        print(f"** unknown syntax: {line}")
                 else:
-                    print(f"*** Unknown syntax: {line}")
+                    print(f"** unknown syntax: {line}")
             else:
-                print(f"** class doesn't exist **")
+                print("** class doesn't exist **")
         else:
             print(f"*** Unknown syntax: {line}")
 
@@ -100,34 +99,37 @@ class HBNBCommand(cmd.Cmd):
                 obj = storage.all()[key]
                 setattr(obj, args[2], args[3])
                 obj.save()
+            else:
+                print("** no instance found **")
 
     def do_update_with_dict(self, arg):
         """Update an instance based on the class name and id
         with a dictionary.
         """
         args = arg.split(maxsplit=2)
-        if len(args) < 2:
-            if len(args) == 0:
-                print("** class name missing **")
-            elif len(args) == 1:
-                print("** instance id missing **")
-            else:
-                print("** dictionary missing **")
+        if len(args) < 3:
+            print("** dictionary missing **")
         elif args[0] not in self.classes:
             print("** class doesn't exist **")
         else:
             key = f"{args[0]}.{args[1]}"
             if key in storage.all():
                 obj = storage.all()[key]
-                attributes = eval(args[2])
-                if not isinstance(attributes, dict):
+                try:
+                    attributes = eval(args[2])
+                    if isinstance(attributes, dict):
+                        for attr_name, attr_value in attributes.items():
+                            if hasattr(obj, attr_name):
+                                current_type = type(getattr(obj, attr_name))
+                                attr_value = current_type(attr_value)
+                            setattr(obj, attr_name, attr_value)
+                        obj.save()
+                    else:
+                        print("** invalid dictionary format **")
+                except (syntaxError, NameError) as e:
                     print("** invalid dictionary format **")
-                    return
-                for attr_name, attr_value in attributes.items():
-                    setattr(obj, attr_name, attr_value)
-                    obj.save()
-                else:
-                    print("** no instance found **")
+            else:
+                print("** no instance found **")
 
     def do_destroy(self, arg):
         """Deletes an instance based on the class name and id."""
